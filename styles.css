@@ -1,0 +1,238 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    color: #e6f1e6;
+    font-family: 'VT323', monospace;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    filter: contrast(1.1) brightness(1.1) saturate(1.1);
+}
+
+#tv-background {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -2;
+    background: radial-gradient(ellipse at center, #1a2a3a 0%, #000 100%);
+}
+
+#tv-vignette {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 10;
+    background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
+    pointer-events: none;
+}
+
+.screen {
+    position: relative;
+    width: 90vw;
+    max-width: 800px;
+    height: 80vh;
+    background: #0a0a0a;
+    border: 4px solid #333;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1), inset 0 0 60px rgba(0,0,0,0.5);
+    animation: screenFlicker 0.15s infinite;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.screen::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+
+.screen-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid #333;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #ff3333;
+    filter: url(#glow-red);
+}
+
+.blink {
+    animation: blink 1s infinite;
+}
+
+.content-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
+}
+
+.site-title {
+    font-size: 3.5rem;
+    color: #fff;
+    filter: url(#glow-cyan);
+    margin-bottom: 2rem;
+    text-align: center;
+    letter-spacing: 5px;
+}
+
+.search-box {
+    display: flex;
+    width: 100%;
+    max-width: 500px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.prompt {
+    color: #0ff;
+    font-size: 1.5rem;
+    filter: url(#glow-cyan);
+}
+
+input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #0ff;
+    color: #fff;
+    font-family: 'VT323', monospace;
+    font-size: 1.5rem;
+    flex-grow: 1;
+    outline: none;
+    padding: 5px;
+    text-transform: uppercase;
+}
+
+input::placeholder {
+    color: rgba(0, 255, 255, 0.3);
+}
+
+button {
+    background: transparent;
+    border: 1px solid #0ff;
+    color: #0ff;
+    font-family: 'VT323', monospace;
+    padding: 5px 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: #0ff;
+    color: #000;
+    box-shadow: 0 0 15px #0ff;
+}
+
+.retro-btn {
+    margin-top: 2rem;
+    border: 1px dashed #0ff;
+}
+
+.weather-panel {
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.loading-text {
+    font-size: 1.5rem;
+    color: #aaa;
+    animation: pulse 1.5s infinite;
+}
+
+#city-name {
+    font-size: 3rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    filter: url(#glow-cyan);
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+}
+
+.stat-box {
+    border: 1px solid #333;
+    padding: 1rem;
+    background: rgba(0,255,255,0.05);
+}
+
+.label {
+    display: block;
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.value {
+    font-size: 2rem;
+    color: #0ff;
+    text-shadow: 2px 2px 0px rgba(255,0,255,0.5);
+}
+
+@keyframes screenFlicker {
+    0% { opacity: 0.97; }
+    5% { opacity: 0.95; }
+    10% { opacity: 0.99; }
+    100% { opacity: 0.98; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.interference-line {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    top: 0;
+    z-index: 8;
+    animation: scanDown 4s linear infinite;
+    opacity: 0.3;
+}
+
+@keyframes scanDown {
+    0% { top: -5%; }
+    100% { top: 110%; }
+}
+
+@media (max-width: 600px) {
+    .weather-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .site-title { font-size: 2.5rem; }
+}
