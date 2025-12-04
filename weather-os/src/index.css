@@ -1,3 +1,5 @@
+/* weather-os/src/index.css */
+
 * {
     margin: 0;
     padding: 0;
@@ -29,6 +31,11 @@ body {
     z-index: 10;
     background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
     pointer-events: none;
+}
+
+.main-container {
+    position: relative;
+    z-index: 1;
 }
 
 .screen {
@@ -79,6 +86,7 @@ body {
     flex-direction: column;
     align-items: center;
     z-index: 5;
+    width: 100%;
 }
 
 .site-title {
@@ -139,9 +147,10 @@ button:hover {
     box-shadow: 0 0 15px #0ff;
 }
 
-.retro-btn {
-    margin-top: 2rem;
-    border: 1px dashed #0ff;
+.divider {
+    color: #333;
+    margin: 1rem 0;
+    letter-spacing: 2px;
 }
 
 .weather-panel {
@@ -161,7 +170,7 @@ button:hover {
     animation: pulse 1.5s infinite;
 }
 
-#city-name {
+.glitch-text {
     font-size: 3rem;
     color: #fff;
     margin-bottom: 1.5rem;
@@ -195,6 +204,15 @@ button:hover {
     text-shadow: 2px 2px 0px rgba(255,0,255,0.5);
 }
 
+.footer-msg {
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.retro-btn {
+    border: 1px dashed #0ff;
+}
+
 @keyframes screenFlicker {
     0% { opacity: 0.97; }
     5% { opacity: 0.95; }
@@ -222,6 +240,7 @@ button:hover {
     z-index: 8;
     animation: scanDown 4s linear infinite;
     opacity: 0.3;
+    pointer-events: none;
 }
 
 @keyframes scanDown {
@@ -235,4 +254,5 @@ button:hover {
         gap: 1rem;
     }
     .site-title { font-size: 2.5rem; }
+    .screen { height: 100vh; width: 100vw; border: none; }
 }
