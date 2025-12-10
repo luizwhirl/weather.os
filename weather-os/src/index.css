@@ -173,9 +173,17 @@ button:hover {
 .glitch-text {
     font-size: 3rem;
     color: #fff;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
     text-transform: uppercase;
     filter: url(#glow-cyan);
+}
+
+.location-subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .weather-grid {

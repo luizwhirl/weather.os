@@ -12,6 +12,15 @@ const weatherCodes = {
   80: 'Pancadas Chuva', 95: 'Trovoada', 96: 'Trovoada c/ Granizo'
 };
 
+const brStates = {
+  "Acre": "AC", "Alagoas": "AL", "Amapá": "AP", "Amazonas": "AM", "Bahia": "BA", "Ceará": "CE", 
+  "Distrito Federal": "DF", "Espírito Santo": "ES", "Goiás": "GO", "Maranhão": "MA", 
+  "Mato Grosso": "MT", "Mato Grosso do Sul": "MS", "Minas Gerais": "MG", "Pará": "PA", 
+  "Paraíba": "PB", "Paraná": "PR", "Pernambuco": "PE", "Piauí": "PI", "Rio de Janeiro": "RJ", 
+  "Rio Grande do Norte": "RN", "Rio Grande do Sul": "RS", "Rondônia": "RO", "Roraima": "RR", 
+  "Santa Catarina": "SC", "São Paulo": "SP", "Sergipe": "SE", "Tocantins": "TO"
+};
+
 function App() {
   const [query, setQuery] = useState('');
   const [weatherData, setWeatherData] = useState(null);
@@ -26,7 +35,12 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchWeather = async (lat, lon, locationName) => {
+  const getFormattedLocation = (name, admin1) => {
+    const stateCode = brStates[admin1] || admin1;
+    return stateCode ? `${name} - ${stateCode}` : name;
+  };
+
+  const fetchWeather = async (lat, lon, locationName, subtitle = null) => {
     setLoading(true);
     setStatusMsg("BAIXANDO DADOS DO SATÉLITE...");
     setWeatherData(null);
@@ -38,6 +52,7 @@ function App() {
       if (data.current_weather) {
         setWeatherData({
           name: locationName,
+          subtitle: subtitle,
           temp: Math.round(data.current_weather.temperature),
           wind: data.current_weather.windspeed,
           code: data.current_weather.weathercode
@@ -64,7 +79,8 @@ function App() {
 
       if (data.results && data.results.length > 0) {
         const result = data.results[0];
-        fetchWeather(result.latitude, result.longitude, result.name);
+        const formattedName = getFormattedLocation(result.name, result.admin1);
+        fetchWeather(result.latitude, result.longitude, formattedName);
       } else {
         setStatusMsg("ERRO 404: LOCAL NÃO ENCONTRADO");
         setWeatherData(null);
@@ -81,8 +97,28 @@ function App() {
       setLoading(true);
       setStatusMsg("RASTREANDO POSIÇÃO ATUAL...");
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchWeather(position.coords.latitude, position.coords.longitude, "SUA LOCALIZAÇÃO");
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          
+          try {
+            const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=pt`);
+            const data = await response.json();
+            
+            let displayName = "LOCAL DESCONHECIDO";
+            
+            if (data.city || data.locality) {
+               const city = data.city || data.locality;
+               const stateName = data.principalSubdivision;
+               const stateCode = brStates[stateName] || (data.principalSubdivisionCode ? data.principalSubdivisionCode.split('-')[1] : null);
+               
+               displayName = stateCode ? `${city} - ${stateCode}` : city;
+            }
+            
+            fetchWeather(lat, lon, displayName, "SUA LOCALIZAÇÃO");
+          } catch (error) {
+            fetchWeather(lat, lon, "COORDENADAS GPS", "SUA LOCALIZAÇÃO");
+          }
         },
         (error) => {
           setLoading(false);
@@ -161,6 +197,9 @@ function App() {
               {!loading && weatherData && (
                 <div id="weather-data">
                   <h2 className="glitch-text">{weatherData.name}</h2>
+                  {weatherData.subtitle && (
+                    <div className="location-subtitle">{weatherData.subtitle}</div>
+                  )}
                   <div className="weather-grid">
                     <div className="stat-box">
                       <span className="label">TEMP</span>
