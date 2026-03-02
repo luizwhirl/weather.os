@@ -1,5 +1,3 @@
-// weather-os/src/App.jsx
-
 import React, { useState, useEffect } from 'react';
 import './index.css';
 
@@ -27,6 +25,9 @@ function App() {
   const [statusMsg, setStatusMsg] = useState('AGUARDANDO INPUT DO USUÁRIO...');
   const [time, setTime] = useState('00:00:00');
   const [loading, setLoading] = useState(false);
+  
+  const [newsData, setNewsData] = useState(null);
+  const [newsLoading, setNewsLoading] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,10 +41,32 @@ function App() {
     return stateCode ? `${name} - ${stateCode}` : name;
   };
 
+const fetchNews = async (locationName) => {
+    setNewsLoading(true);
+    try {
+      const cleanCityName = locationName.split(' - ')[0];
+      
+      const response = await fetch(`/.netlify/functions/getNews?q=${encodeURIComponent(cleanCityName)}`);
+      const data = await response.json();
+
+      if (data.articles) {
+        setNewsData(data.articles);
+      } else {
+        setNewsData([]);
+      }
+    } catch (error) {
+      console.error("Erro na interceptação de notícias:", error);
+      setNewsData([]);
+    } finally {
+      setNewsLoading(false);
+    }
+  };
+
   const fetchWeather = async (lat, lon, locationName, subtitle = null) => {
     setLoading(true);
     setStatusMsg("BAIXANDO DADOS DO SATÉLITE...");
     setWeatherData(null);
+    setNewsData(null);
 
     try {
       const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
@@ -58,6 +81,8 @@ function App() {
           code: data.current_weather.weathercode
         });
         setStatusMsg('');
+        
+        fetchNews(locationName);
       } else {
         setStatusMsg("DADOS INCOMPLETOS");
       }
@@ -84,6 +109,7 @@ function App() {
       } else {
         setStatusMsg("ERRO 404: LOCAL NÃO ENCONTRADO");
         setWeatherData(null);
+        setNewsData(null);
       }
     } catch (error) {
       setStatusMsg("ERRO DE COMUNICAÇÃO");
@@ -219,6 +245,42 @@ function App() {
                 </div>
               )}
             </div>
+
+            {!loading && weatherData && (
+              <>
+                <div className="divider" style={{ marginTop: '20px' }}>--------------------------------</div>
+                <div className="news-panel" style={{ marginTop: '10px', textAlign: 'left' }}>
+                  <span className="prompt" style={{ color: '#00ffcc' }}>{'>'} EXECUTANDO NEWS.exe...</span>
+                  
+                  {newsLoading && (
+                    <div className="loading-text" style={{ marginTop: '10px' }}>INTERCEPTANDO SINAIS DE RÁDIO...</div>
+                  )}
+
+                  {!newsLoading && newsData && newsData.length > 0 && (
+                    <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {newsData.map((news, index) => (
+                        <a 
+                          key={index} 
+                          href={news.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ color: '#fff', textDecoration: 'none', fontSize: '0.9rem', display: 'block', borderLeft: '2px solid #00ffcc', paddingLeft: '10px' }}
+                        >
+                          <span style={{ color: '#00ffcc', marginRight: '5px' }}>[{index + 1}]</span>
+                          {news.title}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {!newsLoading && newsData && newsData.length === 0 && (
+                    <div className="loading-text" style={{ marginTop: '10px', color: '#ff3333' }}>
+                      NENHUMA TRANSMISSÃO ENCONTRADA PARA ESTA ÁREA.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="footer-msg">
               <button onClick={handleLocate} className="retro-btn">
