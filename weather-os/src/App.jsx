@@ -41,12 +41,17 @@ function App() {
     return stateCode ? `${name} - ${stateCode}` : name;
   };
 
-const fetchNews = async (locationName) => {
+  const fetchNews = async (locationName) => {
     setNewsLoading(true);
     try {
       const cleanCityName = locationName.split(' - ')[0];
       
-      const response = await fetch(`../netlify/functions/getNews?q=${encodeURIComponent(cleanCityName)}`);
+      // ver como esconder a chave de API aqui nesse caraio
+      const API_KEY = 'KEY_PRA_BOTA_AQUI'; 
+      
+      const gnewsUrl = `https://gnews.io/api/v4/search?q=${encodeURIComponent(cleanCityName)}&lang=pt&country=br&max=3&apikey=${API_KEY}`;
+      
+      const response = await fetch(gnewsUrl);
       const data = await response.json();
 
       if (data.articles) {
