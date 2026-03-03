@@ -46,7 +46,7 @@ const fetchNews = async (locationName) => {
     try {
       const cleanCityName = locationName.split(' - ')[0];
       
-      const response = await fetch(`../.netlify/functions/getNews?q=${encodeURIComponent(cleanCityName)}`);
+      const response = await fetch(`../netlify/functions/getNews?q=${encodeURIComponent(cleanCityName)}`);
       const data = await response.json();
 
       if (data.articles) {
