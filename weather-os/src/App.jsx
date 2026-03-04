@@ -77,21 +77,26 @@ function App() {
     return locationStr;
   };
 
-const fetchNews = async (locationName) => {
+  const fetchNews = async (locationName) => {
     setNewsLoading(true);
     try {
       const parts = locationName.split(' - ');
       const city = parts[0];
       
-      let searchQuery = city;
+      let stateCode = parts[1] ? parts[1].split(' ')[0].replace(/[()]/g, '') : '';
+      let fullStateName = stateCode ? (reverseBrStates[stateCode] || stateCode) : '';
 
-      if (parts[1]) {
-         const stateCode = parts[1].split(' ')[0].replace(/[()]/g, ''); 
-         const fullStateName = reverseBrStates[stateCode] || stateCode;
-         searchQuery = `${city} ${fullStateName}`; 
+      let queryStr = `"${city}"`;
+
+      if (city.split(' ').length < 3) {
+          if (stateCode) {
+              queryStr = `"${city}" AND ("${fullStateName}" OR "${stateCode}" OR "cidade" OR "município" OR "prefeitura")`;
+          } else {
+              queryStr = `"${city}" AND ("cidade" OR "município" OR "prefeitura")`;
+          }
       }
 
-      const response = await fetch(`https://weatherros.netlify.app/.netlify/functions/getNews?location=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`https://weatherros.netlify.app/.netlify/functions/getNews?location=${encodeURIComponent(queryStr)}`);
       const data = await response.json();
 
       if (data.articles) {
