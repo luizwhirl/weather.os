@@ -1,11 +1,17 @@
 export async function handler(event, context) {
   const location = event.queryStringParameters.location;
-  
   const API_KEY = process.env.GNEWS_API_KEY;
+
+  const headers = {
+    "Access-Control-Allow-Origin": "*", 
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json"
+  };
 
   if (!location) {
     return {
       statusCode: 400,
+      headers,
       body: JSON.stringify({ error: "Localização não fornecida" }),
     };
   }
@@ -18,15 +24,14 @@ export async function handler(event, context) {
 
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers,
       body: JSON.stringify(data),
     };
   } catch (error) {
     console.error("Erro ao buscar notícias:", error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: "Falha ao buscar as notícias." }),
     };
   }
