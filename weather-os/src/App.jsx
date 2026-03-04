@@ -19,6 +19,8 @@ const brStates = {
   "Santa Catarina": "SC", "São Paulo": "SP", "Sergipe": "SE", "Tocantins": "TO"
 };
 
+const reverseBrStates = Object.fromEntries(Object.entries(brStates).map(([key, value]) => [value, key]));
+
 function App() {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -75,11 +77,21 @@ function App() {
     return locationStr;
   };
 
-  const fetchNews = async (locationName) => {
+const fetchNews = async (locationName) => {
     setNewsLoading(true);
     try {
-      const cleanCityName = locationName.split(' - ')[0];
-      const response = await fetch(`https://weatherros.netlify.app/.netlify/functions/getNews?location=${encodeURIComponent(cleanCityName)}`);
+      const parts = locationName.split(' - ');
+      const city = parts[0];
+      
+      let searchQuery = city;
+
+      if (parts[1]) {
+         const stateCode = parts[1].split(' ')[0].replace(/[()]/g, ''); 
+         const fullStateName = reverseBrStates[stateCode] || stateCode;
+         searchQuery = `${city} ${fullStateName}`; 
+      }
+
+      const response = await fetch(`https://weatherros.netlify.app/.netlify/functions/getNews?location=${encodeURIComponent(searchQuery)}`);
       const data = await response.json();
 
       if (data.articles) {
