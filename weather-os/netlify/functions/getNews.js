@@ -11,7 +11,7 @@ export async function handler(event, context) {
   }
 
   try {
-    const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(location)}&lang=pt&country=br&max=3&apikey=${API_KEY}`;
+    const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(location)}&lang=pt&country=br&max=3&sortby=publishedAt&apikey=${API_KEY}`;
     
     const response = await fetch(url);
     const data = await response.json();
