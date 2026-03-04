@@ -19,10 +19,13 @@ export async function handler(event, context) {
     return {
       statusCode: 200,
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS"
       },
       body: JSON.stringify(data),
     };
+
   } catch (error) {
     console.error("Erro ao buscar notícias:", error);
     return {
