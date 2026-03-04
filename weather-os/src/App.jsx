@@ -21,6 +21,8 @@ const brStates = {
 
 function App() {
   const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [weatherData, setWeatherData] = useState(null);
   const [statusMsg, setStatusMsg] = useState('AGUARDANDO INPUT DO USUÁRIO...');
   const [time, setTime] = useState('00:00:00');
@@ -36,16 +38,47 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const getFormattedLocation = (name, admin1) => {
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (query.trim().length < 3) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=5&language=pt&format=json`);
+        const data = await response.json();
+        if (data.results) {
+          setSuggestions(data.results);
+        } else {
+          setSuggestions([]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar sugestões:", error);
+      }
+    };
+
+    const delayDebounceFn = setTimeout(() => {
+      if (showSuggestions) {
+        fetchSuggestions();
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [query, showSuggestions]);
+
+  const getFormattedLocation = (name, admin1, country) => {
     const stateCode = brStates[admin1] || admin1;
-    return stateCode ? `${name} - ${stateCode}` : name;
+    let locationStr = stateCode ? `${name} - ${stateCode}` : name;
+    if (country && country !== "Brazil" && country !== "Brasil") {
+      locationStr += ` (${country})`;
+    }
+    return locationStr;
   };
 
   const fetchNews = async (locationName) => {
     setNewsLoading(true);
     try {
       const cleanCityName = locationName.split(' - ')[0];
-      
       const response = await fetch(`https://weatherros.netlify.app/.netlify/functions/getNews?location=${encodeURIComponent(cleanCityName)}`);
       const data = await response.json();
 
@@ -93,8 +126,23 @@ function App() {
     }
   };
 
+  const handleInputChange = (e) => {
+    setQuery(e.target.value);
+    setShowSuggestions(true);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    const formattedName = getFormattedLocation(suggestion.name, suggestion.admin1, suggestion.country);
+    setQuery(formattedName);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    
+    fetchWeather(suggestion.latitude, suggestion.longitude, formattedName);
+  };
+
   const searchCity = async () => {
     if (!query) return;
+    setShowSuggestions(false);
     setLoading(true);
     setStatusMsg("BUSCANDO COORDENADAS...");
     
@@ -104,7 +152,7 @@ function App() {
 
       if (data.results && data.results.length > 0) {
         const result = data.results[0];
-        const formattedName = getFormattedLocation(result.name, result.admin1);
+        const formattedName = getFormattedLocation(result.name, result.admin1, result.country);
         fetchWeather(result.latitude, result.longitude, formattedName);
       } else {
         setStatusMsg("ERRO 404: LOCAL NÃO ENCONTRADO");
@@ -200,14 +248,27 @@ function App() {
             
             <div className="search-box">
               <span className="prompt">{'>'} INSERIR LOCAL:</span>
-              <input 
-                type="text" 
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Digite uma cidade..." 
-                autoComplete="off"
-              />
+              <div className="input-container">
+                <input 
+                  type="text" 
+                  value={query}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Digite uma cidade..." 
+                  autoComplete="off"
+                />
+                
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="suggestions-list">
+                    {suggestions.map((sug, index) => (
+                      <li key={index} onClick={() => handleSuggestionClick(sug)}>
+                        {getFormattedLocation(sug.name, sug.admin1, sug.country)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
               <button onClick={searchCity}>
                 <i className="fas fa-search"></i>
               </button>
