@@ -46,7 +46,8 @@ function App() {
     try {
       const cleanCityName = locationName.split(' - ')[0];
       
-      const response = await fetch(`/weatheros/.netlify/functions/getNews?location=${encodeURIComponent(cleanCityName)}`);
+      // Agora o frontend chama a função segura do Netlify, sem API Keys visíveis
+      const response = await fetch(`/.netlify/functions/getNews?location=${encodeURIComponent(cleanCityName)}`);
       const data = await response.json();
 
       if (data.articles) {
